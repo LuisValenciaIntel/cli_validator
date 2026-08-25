@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cli-validator"
+version = "1.0.0"
+description = "Extensible Linux CLI and hardware validation framework"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+authors = [{name = "CLI Validator Contributors"}]
+dependencies = [
+  "fastapi>=0.116,<1",
+  "Jinja2>=3.1.4,<4",
+  "PyYAML>=6.0.2,<7",
+  "uvicorn>=0.35,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx2>=2.12,<3",
+  "pytest>=8.3,<10",
+  "pytest-cov>=6,<8",
+  "ruff>=0.11,<1",
+  "mypy>=1.15,<2",
+  "types-PyYAML>=6.0.12,<7",
+]
+
+[project.scripts]
+cli-validator = "cli_validator.cli:main"
+
+[project.entry-points.pytest11]
+cli-validator = "cli_validator.pytest_plugin"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cli_validator*"]
+
+[tool.setuptools.package-data]
+"cli_validator.reports" = ["templates/*.j2"]
+"cli_validator.web" = ["static/*", "static/assets/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+packages = ["cli_validator"]
+
+
+
+
+
+

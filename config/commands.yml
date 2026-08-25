@@ -1,0 +1,110 @@
+# Linux/IPSS example. No hardware identifiers are hardcoded.
+discovery:
+  - type: pcie
+  # IPSS commands can contribute inventory when they emit a JSON object:
+  # - type: json_command
+  #   command: ipss probehardware --format json
+
+variables:
+  timeout: 120
+  loop_number: "{{ env.get('IPSS_LOOP_NUMBER', '3') }}"
+
+defaults:
+  timeout: 120
+  retry:
+    count: 1
+    delay: 2
+
+tests:
+  - name: Check IOMT CLI usage
+    command: ipss
+    validations:
+      - type: contains
+        normalize: true
+        value: |-
+          Usage: ipss [OPTIONS] COMMAND [ARGS]...
+
+          IPSS command line tool
+        
+          Options:
+            --help  Show this message and exit.
+          
+          Commands:
+            analyze         Generate report (use showresults command to see the
+                            available indexes)
+            checkflow       Get margin flow configuration details.
+            createflow      Create a margin flow with specific parameters and
+                            configuration.
+            deleteflow      Delete a margin flow.
+            eyemasks        Get eye masks values and version by component and interface.
+            getmasks        Get masks version by interface.
+            listflows       List existing margin flows.
+            listtests       List all interfaces.
+            marginsettings  Show the available configuration settings for an interface.
+                            These settings can be set when creating a margin flow using
+                            "createflow" command.
+            probehardware   Get hardware information. It will show available devices and
+                            their corresponding socket and port.
+            runflow         Run a margin flow.
+            runflows        Run a list of margin flows, one after each other.
+            setflowname     Rename an existing margin flow. Use “listflows” to check
+                            existing flows.
+            showresults     Display analysis table. Use "index" value for analyze
+                            command
+            systeminfo      Get hardware information. Same as "probehardware". This
+                            command will be deprecated in following versions.
+            version         Get the Intel® IO Margin tool revision version
+
+  - name: List Interfaces
+    command: ipss listtests
+    check_stderr: true
+    validations:
+      - type: table
+        column: Name
+        mode: values
+        normalize: true
+        values:
+          - GNR-PCIe
+          - SRF-PCIe
+          - CWF-PCIe
+
+  - name: CLI List IOMT test flows
+    command: ipss listflows
+    check_stderr: true
+    validations:
+      - type: table
+        column: Flows
+        mode: min_count
+        count: 2
+
+  - name: Check version using CLI
+    command: ipss version
+    check_stderr: true
+    validations:
+      - type: contains
+        value: "Version"
+        normalize: true
+
+  - name: Probe IO PCIe GNR-AP component using CLI
+    command: ipss probehardware GNR-PCIe
+    validations:
+      - type: contains
+        value: IPSS_SUCESS
+        normalize: true
+
+  - name: Loop - Create margin flow PCIe GNR-AP component
+    command: ipss createflow -i GNR-PCIe -c Mask 0x1 -c repeatcnt 1
+    validations:
+      - type: contains
+        value: IPSS_SUCESS
+        normalize: true
+
+  - name: All Ports - Create margin flow PCIe GNR-AP component
+    command: ipss createflow -i GNR-PCIe -s -fn GNR-PCIe -c Mask 0x1
+    validations:
+      - type: contains
+        value: IPSS_SUCESS
+        normalize: true
+
+
+

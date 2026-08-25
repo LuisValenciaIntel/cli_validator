@@ -1,0 +1,31 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Packaging
+*.egg-info/
+build/
+dist/
+frontend/node_modules/
+frontend/*.tsbuildinfo
+
+# Virtual environments
+.venv/
+venv/
+
+# Runtime evidence (keep the directory placeholder)
+results/*
+!results/.gitkeep
+
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+

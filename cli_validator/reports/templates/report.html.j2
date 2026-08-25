@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CLI Validator Report</title>
+  <style>
+    :root { color-scheme: light dark; --pass:#15803d; --fail:#b91c1c; --skip:#a16207; }
+    body { font: 15px system-ui, sans-serif; margin: 2rem; max-width: 1200px; }
+    .summary { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+    .metric { border:1px solid #8888; border-radius:.5rem; padding:1rem; min-width:110px; }
+    .metric strong { display:block; font-size:1.6rem; }
+    article { border:1px solid #8888; border-left-width:.5rem; border-radius:.5rem; margin:1rem 0; padding:1rem; }
+    article.passed { border-left-color:var(--pass); } article.failed { border-left-color:var(--fail); }
+    article.skipped { border-left-color:var(--skip); }
+    code, pre { background:#8882; border-radius:.25rem; padding:.2rem .4rem; }
+    pre { padding:.8rem; overflow:auto; white-space:pre-wrap; }
+    table { border-collapse:collapse; width:100%; } th, td { border:1px solid #8886; padding:.5rem; text-align:left; }
+    .passed-text { color:var(--pass); } .failed-text { color:var(--fail); }
+  </style>
+</head>
+<body>
+  <h1>CLI Validator Report</h1>
+  <p>Started: {{ started_at }} · Finished: {{ finished_at }}</p>
+  <section class="summary">
+    <div class="metric"><strong>{{ total }}</strong>Total</div>
+    <div class="metric"><strong>{{ passed }}</strong>Passed</div>
+    <div class="metric"><strong>{{ failed }}</strong>Failed</div>
+    <div class="metric"><strong>{{ skipped }}</strong>Skipped</div>
+    <div class="metric"><strong>{{ "%.1f"|format(pass_percentage) }}%</strong>Pass rate</div>
+  </section>
+  {% if inventory %}<details><summary>Inventory</summary><pre>{{ inventory | tojson(indent=2) }}</pre></details>{% endif %}
+  {% for row in rows %}
+  <article class="{{ row.status }}">
+    <h2>{{ row.test_id }} · {{ row.name }} — {{ row.status | upper }}</h2>
+    {% if row.skip_reason %}<p>{{ row.skip_reason }}</p>{% endif %}
+    <p><code>{{ row.command }}</code></p>
+    <p>Exit code: {{ row.exit_code }} · Execution: {{ "%.3f"|format(row.execution_time) }}s</p>
+    {% if row.validations %}
+    <table><thead><tr><th>Validator</th><th>Result</th><th>Message</th></tr></thead><tbody>
+      {% for validation in row.validations %}<tr><td>{{ validation.validator }}</td><td class="{{ 'passed-text' if validation.pass_fail else 'failed-text' }}">{{ 'PASS' if validation.pass_fail else 'FAIL' }}</td><td>{{ validation.message }}</td></tr>{% endfor %}
+    </tbody></table>
+    {% endif %}
+    <details><summary>stdout</summary><pre>{{ row.stdout }}</pre></details>
+    <details><summary>stderr</summary><pre>{{ row.stderr }}</pre></details>
+  </article>
+  {% endfor %}
+</body>
+</html>
